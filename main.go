@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	boring("Boring!")
+	go boring("Boring!")
 }
 
 func boring(msg string) {
