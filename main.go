@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	quit := make(chan bool)
+	quit := make(chan string)
 	c := boring("Joe", quit)
 
 	for {
@@ -15,24 +15,31 @@ func main() {
 		case s := <-c:
 			fmt.Println(s)
 		case <-quit:
+			cleanup()
+			quit <- "See you!"
 			return
 		}
 	}
 }
 
-func boring(msg string, q chan bool) <-chan string {
+func boring(msg string, q chan string) <-chan string {
 	c := make(chan string)
 	end := rand.Intn(10)
 
 	go func() { // We launch the goroutine from inside the funtion.
 		for i := 0; ; i++ {
 			c <- fmt.Sprintf("%s: %d", msg, i)
-			time.Sleep(time.Duration(rand.Intn(1.5e3)) * time.Millisecond)
+			time.Sleep(time.Duration(rand.Intn(1e3)) * time.Millisecond)
 			if i == end {
-				q <- true
+				q <- "Bye!"
+				fmt.Printf("Joe says: %q\n", <-q)
 			}
 		}
 	}()
 
 	return c
+}
+
+func cleanup() {
+	// Dummy function
 }
