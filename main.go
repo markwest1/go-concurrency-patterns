@@ -22,10 +22,25 @@ type Search func(query string) Result
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	start := time.Now()
-	results := Google("golang")
+	results := First("golang",
+		fakeSearch("replica 1"),
+		fakeSearch("replica 2"))
 	elapsed := time.Since(start)
 	fmt.Println(results)
 	fmt.Println(elapsed)
+}
+
+// First is called with a variadic set of search replicas to avoid placing a
+// bet on a single query: only the results from the fastest search replica will
+// be returned.
+func First(query string, replicas ...Search) Result {
+	c := make(chan Result)
+	searchReplica := func(i int) { c <- replicas[i](query) }
+	for i := range replicas {
+		go searchReplica(i)
+	}
+
+	return <-c
 }
 
 // Google a query
