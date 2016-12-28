@@ -6,53 +6,26 @@ import (
 	"time"
 )
 
-// Message provides a synchronizing channel type.
-type Message struct {
-	str  string
-	wait chan bool
-}
-
 func main() {
-	c := fanIn(boring("Joe"), boring("Ann"))
-	for i := 0; i < 5; i++ {
-		msg1 := <-c
-		fmt.Println(msg1.str)
-
-		msg2 := <-c
-		fmt.Println(msg2.str)
-
-		msg1.wait <- true
-		msg2.wait <- true
-	}
-	fmt.Println("You're both boring; I'm leaving.")
-}
-
-func fanIn(input1, input2 <-chan Message) <-chan Message {
-	c := make(chan Message)
-
-	go func() {
-		for {
-			select {
-			case s := <-input1:
-				c <- s
-			case s := <-input2:
-				c <- s
-			}
+	c := boring("Joe")
+	for {
+		select {
+		case s := <-c:
+			fmt.Println(s)
+		case <-time.After(1 * time.Second):
+			fmt.Println("You're too slow.")
+			return
 		}
-	}()
-
-	return c
+	}
 }
 
-func boring(msg string) <-chan Message { // Returns receive-only channel of strings.
-	c := make(chan Message)
-	waitForIt := make(chan bool)
+func boring(msg string) <-chan string {
+	c := make(chan string)
 
 	go func() { // We launch the goroutine from inside the funtion.
 		for i := 0; ; i++ {
-			c <- Message{fmt.Sprintf("%s: %d", msg, i), waitForIt}
-			time.Sleep(time.Duration(rand.Intn(1e3)) * time.Millisecond)
-			<-waitForIt
+			c <- fmt.Sprintf("%s: %d", msg, i)
+			time.Sleep(time.Duration(rand.Intn(1.5e3)) * time.Millisecond)
 		}
 	}()
 
