@@ -22,9 +22,7 @@ type Search func(query string) Result
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	start := time.Now()
-	results := First("golang",
-		fakeSearch("replica 1"),
-		fakeSearch("replica 2"))
+	results := Google("golang")
 	elapsed := time.Since(start)
 	fmt.Println(results)
 	fmt.Println(elapsed)
@@ -45,12 +43,17 @@ func First(query string, replicas ...Search) Result {
 
 // Google a query
 func Google(query string) (results []Result) {
+	Web1 := fakeSearch("web1")
+	Web2 := fakeSearch("web2")
+	Image1 := fakeSearch("image1")
+	Image2 := fakeSearch("image2")
+	Video1 := fakeSearch("video1")
+	Video2 := fakeSearch("video2")
+
 	c := make(chan Result)
-
-	go func() { c <- Web(query) }()
-	go func() { c <- Image(query) }()
-	go func() { c <- Video(query) }()
-
+	go func() { c <- First(query, Web1, Web2) }()
+	go func() { c <- First(query, Image1, Image2) }()
+	go func() { c <- First(query, Video1, Video2) }()
 	timeout := time.After(80 * time.Millisecond)
 	for i := 0; i < 3; i++ {
 		select {
