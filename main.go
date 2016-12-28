@@ -1,23 +1,44 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
+// Search kinds
+var (
+	Web   = fakeSearch("web")
+	Image = fakeSearch("image")
+	Video = fakeSearch("video")
+)
+
+// Result is returned by Search for a query
+type Result string
+
+// Search receives a query and returns a result
+type Search func(query string) Result
 
 func main() {
-	const n = 1000000
-	leftmost := make(chan int)
-	right := leftmost
-	left := leftmost
-	for i := 0; i < n; i++ {
-		right = make(chan int)
-		go f(left, right)
-		left = right
-	}
-	go func(c chan int) {
-		c <- 1
-	}(right)
-	fmt.Println(<-leftmost)
+	rand.Seed(time.Now().UnixNano())
+	start := time.Now()
+	results := Google("golang")
+	elapsed := time.Since(start)
+	fmt.Println(results)
+	fmt.Println(elapsed)
 }
 
-func f(left, right chan int) {
-	left <- 1 + <-right
+// Google a query
+func Google(query string) (results []Result) {
+	results = append(results, Web(query))
+	results = append(results, Image(query))
+	results = append(results, Video(query))
+	return
+}
+
+func fakeSearch(kind string) Search {
+	return func(query string) Result {
+		time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
+		return Result(fmt.Sprintf("%s result for %q\n", kind, query))
+	}
 }
