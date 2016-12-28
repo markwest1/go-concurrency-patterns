@@ -8,6 +8,12 @@ Why do Golang's concurrency primitives promote creation of sophisticated, yet si
 * Condition variables
 * Callbacks
 
-Golang promotes composition of independently executable pieces of strait-forward sequential code to produce concurrent programs. 
-
 Watch Rob's talk to learn more.
+
+Golang promotes composition of independently executable pieces of strait-forward sequential code to produce concurrent programs.
+
+Some more examples to wrap your brain around:
+
+* [Chat Roulette Toy](https://engineering.tumblr.com/post/23049359840/talk-by-andrew-gerrand-go-code-that-grows-with)
+* [Concurrent Prime Sieve](https://play.golang.org/p/9U22NfrXeq)
+* [Load Balancer](https://blog.golang.org/go-programming-session-video-from)
