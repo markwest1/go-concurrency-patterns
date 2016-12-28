@@ -7,27 +7,30 @@ import (
 )
 
 func main() {
-	c := boring("Joe")
-	timeout := time.After(5 * time.Second)
+	quit := make(chan bool)
+	c := boring("Joe", quit)
 
 	for {
 		select {
 		case s := <-c:
 			fmt.Println(s)
-		case <-timeout:
-			fmt.Println("You talk too much.")
+		case <-quit:
 			return
 		}
 	}
 }
 
-func boring(msg string) <-chan string {
+func boring(msg string, q chan bool) <-chan string {
 	c := make(chan string)
+	end := rand.Intn(10)
 
 	go func() { // We launch the goroutine from inside the funtion.
 		for i := 0; ; i++ {
 			c <- fmt.Sprintf("%s: %d", msg, i)
 			time.Sleep(time.Duration(rand.Intn(1.5e3)) * time.Millisecond)
+			if i == end {
+				q <- true
+			}
 		}
 	}()
 
